@@ -1,19 +1,24 @@
-const accessKey = 'vO-FKIksPGPipWk3BWM0FZ7Mga50VPyT7ScjIx8Z3_c';
-const ApiUrl = `https://api.unsplash.com/photos/random/?client_id=${accessKey}&count=30`
+let imagesArray = [];     // to store each image object that gets returned from the call to the Unsplash random image API using fetch method
+let countOfImagesLoaded = 0;  // to track the number of images loaded onto the web page
+let totalImagesToLoad = 30;  // to define the total amount of images to load onto the web page for EACH individual call to the unsplash image API.
+let allImagesLoaded = false;
 
-//  create variables for img and page loader , add to DOM
+const accessKey = 'vO-FKIksPGPipWk3BWM0FZ7Mga50VPyT7ScjIx8Z3_c';
+const ApiUrl = `https://api.unsplash.com/photos/random/?client_id=${accessKey}&count=${totalImagesToLoad}`
+
+//  create variable elements for img and page loader , add to DOM
 const imgContainer = document.querySelector('.img-container');
 const loadContainer = document.getElementById('loader');
-let photoArray = [];
-let imagesCount = 0;
-let pageLoaded = false;
+
 
 
 function imageLoaded(){
-    imagesCount++
-    if(imagesCount === 30){
-        pageLoaded = true;
-        imagesCount = 0;
+    countOfImagesLoaded++
+    if(countOfImagesLoaded === totalImagesToLoad){
+        allImagesLoaded = true;
+        // set images loaded back to zero and hide page loader icon.
+        countOfImagesLoaded = 0;
+        hidePageLoader();
     }
 
 }
@@ -24,7 +29,7 @@ async function getImages() {
             showPageLoader()
         }
          const response = await fetch(ApiUrl);
-        photoArray = await response.json();       
+        imagesArray = await response.json();       
         displayImages();
          } catch (error) {
             // catch error here
@@ -34,7 +39,7 @@ async function getImages() {
 
 function displayImages() {
     // run function for each object of the array.
-    photoArray.forEach((image) => {
+    imagesArray.forEach((image) => {
         let imageSrc = image.urls.regular
         let imageAlt = image.description
         let imageElement = document.createElement('img');
@@ -45,7 +50,7 @@ function displayImages() {
         imageElement.addEventListener('load', imageLoaded())
        
     })
-    hidePageLoader();
+   
 }
 
 // show loader 
@@ -53,15 +58,16 @@ function showPageLoader() {
 loadContainer.hidden = false;
 }
 
+// hide loader
 function hidePageLoader (){
     loadContainer.hidden = true;
 }
 
 // create event to get more images when scroller reaches the bottom of the page.
 window.addEventListener('scroll', () => {
-    if((window.innerHeight + window.scrollY) >= document.body.offsetHeight && pageLoaded){
+    if((window.innerHeight + window.scrollY) >= document.body.offsetHeight && allImagesLoaded){
         getImages();
-        pageLoaded = false;
+        allImagesLoaded = false;
     }
 })
 
